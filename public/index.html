@@ -11,12 +11,14 @@
     <div id="loginContainer" class="login-container">
         <div class="login-box">
             <div class="login-header">
+                <svg class="manus-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 7V17M7 12H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
                 <h1>Manus</h1>
-                <p>Web Interface</p>
             </div>
             <form id="loginForm" class="login-form">
                 <div class="form-group">
-                    <label for="password">كلمة المرور</label>
                     <input type="password" id="password" name="password" required placeholder="أدخل كلمة المرور">
                 </div>
                 <button type="submit" class="login-btn">دخول</button>
@@ -30,7 +32,11 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h2>Manus</h2>
+                <svg class="sidebar-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M12 7V17M7 12H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span>Manus</span>
             </div>
             
             <button class="new-task-btn" onclick="newTask()">
@@ -39,15 +45,21 @@
             </button>
 
             <div class="conversations-section">
-                <h3>المحادثات</h3>
+                <div class="section-title">المحادثات</div>
                 <div id="conversationsList" class="conversations-list">
                     <div class="conversation-item active" onclick="selectConversation(1)">
-                        <span class="conv-title">المحادثة الأولى</span>
-                        <span class="conv-date">2024-03-07</span>
+                        <div class="conv-icon">📋</div>
+                        <div class="conv-info">
+                            <div class="conv-title">المحادثة الأولى</div>
+                            <div class="conv-subtitle">منذ يومين</div>
+                        </div>
                     </div>
                     <div class="conversation-item" onclick="selectConversation(2)">
-                        <span class="conv-title">المحادثة الثانية</span>
-                        <span class="conv-date">2024-03-06</span>
+                        <div class="conv-icon">📝</div>
+                        <div class="conv-info">
+                            <div class="conv-title">المحادثة الثانية</div>
+                            <div class="conv-subtitle">منذ أسبوع</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -60,41 +72,59 @@
         <!-- Main Content -->
         <main class="main-content">
             <!-- Chat Area -->
-            <div class="chat-area">
+            <div class="chat-container">
                 <div class="chat-header">
-                    <h2 id="chatTitle">المحادثة الأولى</h2>
+                    <div class="header-title">
+                        <h2 id="chatTitle">المحادثة الأولى</h2>
+                    </div>
+                    <div class="header-actions">
+                        <button class="header-btn" title="المشاركة">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                                <polyline points="16 6 12 2 8 6"></polyline>
+                                <line x1="12" y1="2" x2="12" y2="15"></line>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div id="chatMessages" class="chat-messages">
-                    <div class="message user-message">
-                        <div class="message-content">
-                            <p>مرحبا، كيف حالك؟</p>
+                    <div class="message-group">
+                        <div class="message user-message">
+                            <div class="message-content">
+                                <p>مرحبا، كيف يمكنك مساعدتي؟</p>
+                            </div>
                         </div>
-                        <span class="message-time">14:30</span>
                     </div>
-                    <div class="message agent-message">
-                        <div class="message-content">
-                            <p>أنا بخير، شكراً لسؤالك! كيف يمكنني مساعدتك اليوم؟</p>
+                    <div class="message-group">
+                        <div class="message agent-message">
+                            <div class="message-avatar">🤖</div>
+                            <div class="message-content">
+                                <p>مرحباً! أنا هنا لمساعدتك. يمكنك أن تطلب مني أي شيء وسأحاول تنفيذه بأفضل طريقة ممكنة.</p>
+                            </div>
                         </div>
-                        <span class="message-time">14:31</span>
                     </div>
                 </div>
 
-                <!-- Logs Area -->
-                <div class="logs-area">
-                    <div class="logs-header">
-                        <h3>خطوات التنفيذ والسجلات</h3>
+                <!-- Execution Steps -->
+                <div class="execution-panel">
+                    <div class="panel-header">
+                        <h3>خطوات التنفيذ</h3>
                     </div>
-                    <div id="logsList" class="logs-list">
-                        <div class="log-item">
-                            <span class="log-time">14:31:00</span>
-                            <span class="log-level info">INFO</span>
-                            <span class="log-message">تم بدء المهمة</span>
+                    <div id="executionSteps" class="steps-list">
+                        <div class="step-item completed">
+                            <div class="step-number">✓</div>
+                            <div class="step-content">
+                                <div class="step-title">تحليل الأمر</div>
+                                <div class="step-description">تم فهم الأمر بنجاح</div>
+                            </div>
                         </div>
-                        <div class="log-item">
-                            <span class="log-time">14:31:05</span>
-                            <span class="log-level success">SUCCESS</span>
-                            <span class="log-message">تم تحليل الأمر بنجاح</span>
+                        <div class="step-item completed">
+                            <div class="step-number">✓</div>
+                            <div class="step-content">
+                                <div class="step-title">معالجة الطلب</div>
+                                <div class="step-description">جاري معالجة الطلب...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -105,8 +135,15 @@
     <!-- Input Area (Fixed at bottom) -->
     <div id="inputArea" class="input-area" style="display: none;">
         <form id="commandForm" class="command-form">
-            <input type="text" id="commandInput" placeholder="أدخل الأمر أو السؤال..." required>
-            <button type="submit" class="execute-btn">تنفيذ</button>
+            <div class="input-wrapper">
+                <input type="text" id="commandInput" placeholder="ماذا تريد مني أن أفعل؟" required>
+                <button type="submit" class="send-btn" title="إرسال">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
         </form>
     </div>
 

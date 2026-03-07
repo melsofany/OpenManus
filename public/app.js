@@ -4,7 +4,6 @@ let currentConversationId = 1;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if user is already authenticated
     const savedToken = localStorage.getItem('authToken');
     if (savedToken) {
         authToken = savedToken;
@@ -17,7 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // Setup login form
 function setupLoginForm() {
     const loginForm = document.getElementById('loginForm');
+    const passwordInput = document.getElementById('password');
+    
     loginForm.addEventListener('submit', handleLogin);
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleLogin(e);
+        }
+    });
 }
 
 // Handle login
@@ -25,7 +31,11 @@ async function handleLogin(e) {
     e.preventDefault();
     const password = document.getElementById('password').value;
     const errorDiv = document.getElementById('loginError');
+    const loginBtn = document.querySelector('.login-btn');
+    
     errorDiv.textContent = '';
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'جاري التحقق...';
 
     try {
         const response = await fetch('/api/login', {
@@ -45,10 +55,14 @@ async function handleLogin(e) {
             showApp();
         } else {
             errorDiv.textContent = 'كلمة المرور غير صحيحة';
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'دخول';
         }
     } catch (error) {
         console.error('Login error:', error);
         errorDiv.textContent = 'حدث خطأ أثناء محاولة تسجيل الدخول';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'دخول';
     }
 }
 
@@ -63,7 +77,15 @@ function showApp() {
 // Setup command form
 function setupCommandForm() {
     const commandForm = document.getElementById('commandForm');
+    const commandInput = document.getElementById('commandInput');
+    
     commandForm.addEventListener('submit', handleCommandSubmit);
+    commandInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleCommandSubmit(e);
+        }
+    });
 }
 
 // Handle command submission
@@ -77,6 +99,10 @@ async function handleCommandSubmit(e) {
     // Add user message to chat
     addMessageToChat(command, 'user');
     commandInput.value = '';
+    commandInput.focus();
+
+    // Add execution steps
+    addExecutionStep('تحليل الأمر', 'جاري تحليل الأمر...');
 
     try {
         const response = await fetch('/api/execute', {
@@ -91,61 +117,79 @@ async function handleCommandSubmit(e) {
         if (response.ok) {
             const data = await response.json();
             
+            // Update execution step
+            completeExecutionStep(0);
+            addExecutionStep('معالجة الطلب', 'تم معالجة الطلب بنجاح');
+            completeExecutionStep(1);
+            
             // Add agent response to chat
             addMessageToChat(data.output, 'agent');
             
-            // Add logs
-            if (data.logs && Array.isArray(data.logs)) {
-                data.logs.forEach(log => {
-                    addLog(log, 'info');
-                });
-            }
         } else if (response.status === 401) {
             logout();
+        } else {
+            addMessageToChat('حدث خطأ أثناء تنفيذ الأمر', 'agent');
         }
     } catch (error) {
         console.error('Command execution error:', error);
-        addMessageToChat('حدث خطأ أثناء تنفيذ الأمر', 'agent');
-        addLog('خطأ: ' + error.message, 'error');
+        addMessageToChat('حدث خطأ في الاتصال بالخادم', 'agent');
     }
 }
 
 // Add message to chat
 function addMessageToChat(message, sender) {
     const chatMessages = document.getElementById('chatMessages');
+    const messageGroup = document.createElement('div');
+    messageGroup.className = 'message-group';
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}-message`;
     
-    const time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+    if (sender === 'agent') {
+        messageDiv.innerHTML = `
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+                <p>${escapeHtml(message)}</p>
+            </div>
+        `;
+    } else {
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <p>${escapeHtml(message)}</p>
+            </div>
+        `;
+    }
     
-    messageDiv.innerHTML = `
-        <div class="message-content">
-            <p>${escapeHtml(message)}</p>
-        </div>
-        <span class="message-time">${time}</span>
-    `;
-    
-    chatMessages.appendChild(messageDiv);
+    messageGroup.appendChild(messageDiv);
+    chatMessages.appendChild(messageGroup);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Add log entry
-function addLog(message, level = 'info') {
-    const logsList = document.getElementById('logsList');
-    const logItem = document.createElement('div');
-    logItem.className = 'log-item';
+// Add execution step
+function addExecutionStep(title, description) {
+    const stepsList = document.getElementById('executionSteps');
+    const stepItem = document.createElement('div');
+    stepItem.className = 'step-item';
     
-    const time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const levelUpper = level.toUpperCase();
-    
-    logItem.innerHTML = `
-        <span class="log-time">${time}</span>
-        <span class="log-level ${level}">${levelUpper}</span>
-        <span class="log-message">${escapeHtml(message)}</span>
+    stepItem.innerHTML = `
+        <div class="step-number">⏳</div>
+        <div class="step-content">
+            <div class="step-title">${escapeHtml(title)}</div>
+            <div class="step-description">${escapeHtml(description)}</div>
+        </div>
     `;
     
-    logsList.appendChild(logItem);
-    logsList.scrollTop = logsList.scrollHeight;
+    stepsList.appendChild(stepItem);
+    document.getElementById('executionSteps').scrollTop = document.getElementById('executionSteps').scrollHeight;
+}
+
+// Complete execution step
+function completeExecutionStep(index) {
+    const steps = document.querySelectorAll('.step-item');
+    if (steps[index]) {
+        steps[index].classList.add('completed');
+        steps[index].querySelector('.step-number').textContent = '✓';
+    }
 }
 
 // Select conversation
@@ -156,24 +200,33 @@ function selectConversation(id) {
     document.querySelectorAll('.conversation-item').forEach(item => {
         item.classList.remove('active');
     });
-    event.target.closest('.conversation-item').classList.add('active');
+    
+    const items = document.querySelectorAll('.conversation-item');
+    if (items[id - 1]) {
+        items[id - 1].classList.add('active');
+    }
     
     // Update chat title
-    const title = event.target.closest('.conversation-item').querySelector('.conv-title').textContent;
-    document.getElementById('chatTitle').textContent = title;
+    const titles = ['المحادثة الأولى', 'المحادثة الثانية'];
+    document.getElementById('chatTitle').textContent = titles[id - 1] || 'محادثة جديدة';
     
-    // Clear messages and logs
+    // Clear messages and steps
     document.getElementById('chatMessages').innerHTML = '';
-    document.getElementById('logsList').innerHTML = '';
+    document.getElementById('executionSteps').innerHTML = '';
 }
 
 // New task
 function newTask() {
     // Clear current chat
     document.getElementById('chatMessages').innerHTML = '';
-    document.getElementById('logsList').innerHTML = '';
+    document.getElementById('executionSteps').innerHTML = '';
     document.getElementById('chatTitle').textContent = 'مهمة جديدة';
     document.getElementById('commandInput').focus();
+    
+    // Remove active state from conversations
+    document.querySelectorAll('.conversation-item').forEach(item => {
+        item.classList.remove('active');
+    });
 }
 
 // Logout

@@ -1,7 +1,83 @@
-The OpenManus project has moved. For the latest source code and information, please visit its new official repository:
+# OpenManus - Web Interface
 
-[https://github.com/FoundationAgents/OpenManus](https://github.com/FoundationAgents/OpenManus)
+واجهة ويب حديثة لنظام Manus، توفر تجربة تفاعلية لإدارة المهام والمحادثات مع الوكيل الذكي.
 
-An archived version of the project is also available here:
+## المميزات
 
-[https://github.com/mannaandpoem/OpenManus_Archive](https://github.com/mannaandpoem/OpenManus_Archive)
+- **تسجيل دخول آمن**: نظام تحقق من كلمة المرور باستخدام متغيرات البيئة
+- **واجهة حديثة**: تصميم نظيف وسهل الاستخدام
+- **إدارة المحادثات**: عرض وإدارة المحادثات السابقة
+- **عرض السجلات**: تتبع خطوات التنفيذ والسجلات
+- **تفاعل فوري**: إرسال الأوامر والحصول على الردود الفورية
+
+## المتطلبات
+
+- Node.js 14 أو أحدث
+- npm أو yarn
+
+## التثبيت
+
+```bash
+# استنساخ المستودع
+git clone https://github.com/melsofany/OpenManus.git
+cd OpenManus
+
+# تثبيت المكتبات
+npm install
+```
+
+## الإعدادات
+
+قم بإنشاء ملف `.env` في جذر المشروع:
+
+```env
+PORT=3000
+MANUS_PASSWORD=your_password_here
+```
+
+## التشغيل
+
+```bash
+# تشغيل الخادم
+npm start
+
+# أو استخدام nodemon للتطوير
+npm run dev
+```
+
+ثم افتح المتصفح وانتقل إلى: `http://localhost:3000`
+
+## الاستخدام
+
+1. أدخل كلمة المرور المعرفة في متغير البيئة `MANUS_PASSWORD`
+2. اضغط على "دخول"
+3. استخدم الواجهة لإدارة المهام والمحادثات
+4. أدخل الأوامر في حقل الإدخال واضغط "تنفيذ"
+
+## الهيكل
+
+```
+OpenManus/
+├── server.js           # خادم Express الرئيسي
+├── public/
+│   ├── index.html      # الصفحة الرئيسية
+│   ├── styles.css      # أنماط CSS
+│   └── app.js          # منطق التطبيق
+├── package.json        # معلومات المشروع والمكتبات
+├── .env                # متغيرات البيئة
+└── README.md           # هذا الملف
+```
+
+## الأمان
+
+- كلمة المرور لا تُخزن في الكود
+- يتم قراءة كلمة المرور من متغير البيئة فقط
+- استخدام التوكنات للجلسات الآمنة
+
+## الترخيص
+
+ISC
+
+## المساهمة
+
+نرحب بالمساهمات! يرجى فتح issue أو pull request.

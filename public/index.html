@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manus - Web Interface</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>Manus</h1>
+                <p>Web Interface</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="password">كلمة المرور</label>
+                    <input type="password" id="password" name="password" required placeholder="أدخل كلمة المرور">
+                </div>
+                <button type="submit" class="login-btn">دخول</button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="appContainer" class="app-container" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Manus</h2>
+            </div>
+            
+            <button class="new-task-btn" onclick="newTask()">
+                <span class="icon">+</span>
+                مهمة جديدة
+            </button>
+
+            <div class="conversations-section">
+                <h3>المحادثات</h3>
+                <div id="conversationsList" class="conversations-list">
+                    <div class="conversation-item active" onclick="selectConversation(1)">
+                        <span class="conv-title">المحادثة الأولى</span>
+                        <span class="conv-date">2024-03-07</span>
+                    </div>
+                    <div class="conversation-item" onclick="selectConversation(2)">
+                        <span class="conv-title">المحادثة الثانية</span>
+                        <span class="conv-date">2024-03-06</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Chat Area -->
+            <div class="chat-area">
+                <div class="chat-header">
+                    <h2 id="chatTitle">المحادثة الأولى</h2>
+                </div>
+
+                <div id="chatMessages" class="chat-messages">
+                    <div class="message user-message">
+                        <div class="message-content">
+                            <p>مرحبا، كيف حالك؟</p>
+                        </div>
+                        <span class="message-time">14:30</span>
+                    </div>
+                    <div class="message agent-message">
+                        <div class="message-content">
+                            <p>أنا بخير، شكراً لسؤالك! كيف يمكنني مساعدتك اليوم؟</p>
+                        </div>
+                        <span class="message-time">14:31</span>
+                    </div>
+                </div>
+
+                <!-- Logs Area -->
+                <div class="logs-area">
+                    <div class="logs-header">
+                        <h3>خطوات التنفيذ والسجلات</h3>
+                    </div>
+                    <div id="logsList" class="logs-list">
+                        <div class="log-item">
+                            <span class="log-time">14:31:00</span>
+                            <span class="log-level info">INFO</span>
+                            <span class="log-message">تم بدء المهمة</span>
+                        </div>
+                        <div class="log-item">
+                            <span class="log-time">14:31:05</span>
+                            <span class="log-level success">SUCCESS</span>
+                            <span class="log-message">تم تحليل الأمر بنجاح</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Input Area (Fixed at bottom) -->
+    <div id="inputArea" class="input-area" style="display: none;">
+        <form id="commandForm" class="command-form">
+            <input type="text" id="commandInput" placeholder="أدخل الأمر أو السؤال..." required>
+            <button type="submit" class="execute-btn">تنفيذ</button>
+        </form>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

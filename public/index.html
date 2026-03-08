@@ -9,53 +9,51 @@
 <body>
     <!-- Login Screen -->
     <div id="loginContainer" class="login-screen">
-        <div class="login-content">
-            <div class="login-logo">
-                <svg viewBox="0 0 24 24" fill="currentColor">
+        <div class="login-box">
+            <div class="login-header">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
                     <circle cx="12" cy="12" r="10"/>
                 </svg>
+                <h1>Manus</h1>
             </div>
-            <h1>Manus</h1>
             <form id="loginForm" class="login-form">
                 <input type="password" id="password" placeholder="كلمة المرور" required>
                 <button type="submit">دخول</button>
-                <div id="loginError" class="login-error"></div>
+                <div id="loginError" class="error-msg"></div>
             </form>
         </div>
     </div>
 
-    <!-- Main App Container -->
-    <div id="appContainer" class="app-wrapper" style="display: none;">
-        <!-- Left Sidebar -->
+    <!-- Main App -->
+    <div id="appContainer" class="app-layout" style="display: none;">
+        <!-- Sidebar Left -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="logo">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="10"/>
-                    </svg>
-                    <span>Manus</span>
-                </div>
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10"/>
+                </svg>
+                <span>Manus</span>
             </div>
 
-            <button class="new-chat-btn" onclick="newChat()">
-                <span class="icon">+</span>
+            <button class="new-task-btn" onclick="newTask()">
+                <span>+</span>
                 مهمة جديدة
             </button>
 
-            <div class="chats-container">
-                <div class="chats-label">المحادثات</div>
+            <div class="chats-section">
+                <div class="section-label">المحادثات</div>
                 <div id="chatsList" class="chats-list">
                     <div class="chat-item active" onclick="selectChat(1)">
                         <div class="chat-icon">💬</div>
-                        <div class="chat-text">
-                            <div class="chat-title">المحادثة الأولى</div>
+                        <div class="chat-details">
+                            <div class="chat-name">المحادثة الأولى</div>
                             <div class="chat-time">منذ يومين</div>
                         </div>
                     </div>
                     <div class="chat-item" onclick="selectChat(2)">
                         <div class="chat-icon">📝</div>
-                        <div class="chat-text">
-                            <div class="chat-title">المحادثة الثانية</div>
+                        <div class="chat-details">
+                            <div class="chat-name">المحادثة الثانية</div>
                             <div class="chat-time">منذ أسبوع</div>
                         </div>
                     </div>
@@ -67,27 +65,25 @@
             </div>
         </aside>
 
-        <!-- Middle Chat Area -->
-        <main class="chat-section">
+        <!-- Chat Center -->
+        <main class="chat-area">
             <div class="chat-header">
                 <h2 id="chatTitle">المحادثة الأولى</h2>
             </div>
 
-            <div id="messagesContainer" class="messages-container">
+            <div id="messagesArea" class="messages-area">
                 <div class="message-group">
-                    <div class="message bot-message">
-                        <div class="message-avatar">🤖</div>
-                        <div class="message-bubble">
-                            <p>مرحباً! أنا Manus. كيف يمكنني مساعدتك اليوم؟</p>
-                        </div>
+                    <div class="message bot">
+                        <div class="avatar">🤖</div>
+                        <div class="bubble">مرحباً! أنا Manus. كيف يمكنني مساعدتك؟</div>
                     </div>
                 </div>
             </div>
 
-            <div class="chat-input-area">
-                <form id="chatForm" class="chat-input-form">
+            <div class="input-section">
+                <form id="messageForm" class="input-form">
                     <input type="text" id="messageInput" placeholder="اكتب أمرك هنا..." required>
-                    <button type="submit" class="send-btn">
+                    <button type="submit" class="send-icon">
                         <svg viewBox="0 0 24 24" fill="currentColor">
                             <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16346272 C3.34915502,0.9 2.40734225,1.00636533 1.77946707,1.4776575 C0.994623095,2.10604706 0.837654326,3.0486314 1.15159189,3.99701575 L3.03521743,10.4380088 C3.03521743,10.5951061 3.19218622,10.7522035 3.50612381,10.7522035 L16.6915026,11.5376904 C16.6915026,11.5376904 17.1624089,11.5376904 17.1624089,12.0089825 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z"/>
                         </svg>
@@ -96,38 +92,28 @@
             </div>
         </main>
 
-        <!-- Right Execution Panel -->
+        <!-- Execution Panel Right -->
         <aside class="execution-panel">
-            <div class="panel-header">
-                <h3>خطوات التنفيذ</h3>
-            </div>
-
-            <div id="stepsContainer" class="steps-container">
-                <div class="step-item">
-                    <div class="step-icon completed">✓</div>
-                    <div class="step-info">
-                        <div class="step-name">تحليل الأمر</div>
-                        <div class="step-desc">تم فهم الأمر بنجاح</div>
-                    </div>
-                </div>
-                <div class="step-item">
-                    <div class="step-icon">⏳</div>
-                    <div class="step-info">
-                        <div class="step-name">معالجة الطلب</div>
-                        <div class="step-desc">جاري المعالجة...</div>
+            <div class="panel-section">
+                <div class="panel-header">خطوات التنفيذ</div>
+                <div id="stepsList" class="steps-list">
+                    <div class="step">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-content">
+                            <div class="step-title">تحليل الأمر</div>
+                            <div class="step-desc">تم فهم الأمر بنجاح</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="panel-divider"></div>
+            <div class="divider"></div>
 
-            <div class="browser-section">
-                <div class="browser-header">
-                    <h3>المتصفح</h3>
-                </div>
-                <div id="browserContent" class="browser-content">
-                    <div class="browser-placeholder">
-                        <div class="placeholder-icon">🌐</div>
+            <div class="panel-section">
+                <div class="panel-header">المتصفح</div>
+                <div id="browserArea" class="browser-area">
+                    <div class="browser-empty">
+                        <div class="empty-icon">🌐</div>
                         <p>سيتم عرض نتائج التصفح هنا</p>
                     </div>
                 </div>

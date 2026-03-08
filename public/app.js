@@ -1,139 +1,118 @@
-// Global state
 let authToken = null;
 let currentChatId = 1;
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    const savedToken = localStorage.getItem('authToken');
-    if (savedToken) {
-        authToken = savedToken;
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        authToken = token;
         showApp();
     } else {
         setupLogin();
     }
 });
 
-// Setup login
 function setupLogin() {
-    const form = document.getElementById('loginForm');
-    form.addEventListener('submit', handleLogin);
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
 }
 
-// Handle login
 async function handleLogin(e) {
     e.preventDefault();
-    const password = document.getElementById('password').value;
-    const errorDiv = document.getElementById('loginError');
-    const button = document.querySelector('.login-form button');
+    const pwd = document.getElementById('password').value;
+    const err = document.getElementById('loginError');
+    const btn = document.querySelector('.login-form button');
     
-    errorDiv.textContent = '';
-    button.disabled = true;
-    button.textContent = 'جاري التحقق...';
+    err.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'جاري...';
 
     try {
-        const response = await fetch('/api/login', {
+        const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password })
+            body: JSON.stringify({ password: pwd })
         });
 
-        const data = await response.json();
-
-        if (response.ok && data.success) {
+        const data = await res.json();
+        if (res.ok && data.success) {
             authToken = data.token;
             localStorage.setItem('authToken', authToken);
             document.getElementById('password').value = '';
             showApp();
         } else {
-            errorDiv.textContent = 'كلمة المرور غير صحيحة';
-            button.disabled = false;
-            button.textContent = 'دخول';
+            err.textContent = 'كلمة المرور غير صحيحة';
+            btn.disabled = false;
+            btn.textContent = 'دخول';
         }
     } catch (error) {
-        errorDiv.textContent = 'خطأ في الاتصال';
-        button.disabled = false;
-        button.textContent = 'دخول';
+        err.textContent = 'خطأ في الاتصال';
+        btn.disabled = false;
+        btn.textContent = 'دخول';
     }
 }
 
-// Show app
 function showApp() {
     document.getElementById('loginContainer').style.display = 'none';
     document.getElementById('appContainer').style.display = 'flex';
     setupChat();
 }
 
-// Setup chat
 function setupChat() {
-    const form = document.getElementById('chatForm');
-    form.addEventListener('submit', handleSendMessage);
+    document.getElementById('messageForm').addEventListener('submit', handleSendMessage);
 }
 
-// Handle send message
 async function handleSendMessage(e) {
     e.preventDefault();
     const input = document.getElementById('messageInput');
-    const message = input.value.trim();
+    const msg = input.value.trim();
 
-    if (!message) return;
+    if (!msg) return;
 
-    // Add user message
-    addMessage(message, 'user');
+    addMessage(msg, 'user');
     input.value = '';
     input.focus();
 
-    // Add step
     addStep('تحليل الأمر', 'جاري التحليل...');
 
     try {
-        const response = await fetch('/api/execute', {
+        const res = await fetch('/api/execute', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             },
-            body: JSON.stringify({ command: message })
+            body: JSON.stringify({ command: msg })
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            
-            // Update steps
+        if (res.ok) {
+            const data = await res.json();
             completeStep(0);
-            addStep('معالجة الطلب', 'تمت المعالجة بنجاح');
+            addStep('معالجة الطلب', 'تمت بنجاح');
             completeStep(1);
-            
-            // Add bot response
             addMessage(data.output, 'bot');
-        } else if (response.status === 401) {
+        } else if (res.status === 401) {
             logout();
         }
     } catch (error) {
-        addMessage('حدث خطأ في الاتصال', 'bot');
+        addMessage('خطأ في الاتصال', 'bot');
     }
 }
 
-// Add message
 function addMessage(text, sender) {
-    const container = document.getElementById('messagesContainer');
+    const container = document.getElementById('messagesArea');
     const group = document.createElement('div');
     group.className = 'message-group';
     
     const msg = document.createElement('div');
-    msg.className = `message ${sender}-message`;
+    msg.className = `message ${sender}`;
     
     if (sender === 'bot') {
         msg.innerHTML = `
-            <div class="message-avatar">🤖</div>
-            <div class="message-bubble">
-                <p>${escapeHtml(text)}</p>
-            </div>
+            <div class="avatar">🤖</div>
+            <div class="bubble">${escapeHtml(text)}</div>
         `;
     } else {
         msg.innerHTML = `
-            <div class="message-bubble">
-                <p>${escapeHtml(text)}</p>
-            </div>
+            <div class="bubble">${escapeHtml(text)}</div>
         `;
     }
     
@@ -142,15 +121,14 @@ function addMessage(text, sender) {
     container.scrollTop = container.scrollHeight;
 }
 
-// Add step
 function addStep(name, desc) {
-    const container = document.getElementById('stepsContainer');
+    const container = document.getElementById('stepsList');
     const step = document.createElement('div');
-    step.className = 'step-item';
+    step.className = 'step';
     step.innerHTML = `
         <div class="step-icon">⏳</div>
-        <div class="step-info">
-            <div class="step-name">${escapeHtml(name)}</div>
+        <div class="step-content">
+            <div class="step-title">${escapeHtml(name)}</div>
             <div class="step-desc">${escapeHtml(desc)}</div>
         </div>
     `;
@@ -158,42 +136,35 @@ function addStep(name, desc) {
     container.scrollTop = container.scrollHeight;
 }
 
-// Complete step
 function completeStep(index) {
-    const steps = document.querySelectorAll('.step-item');
+    const steps = document.querySelectorAll('.step');
     if (steps[index]) {
-        steps[index].querySelector('.step-icon').textContent = '✓';
-        steps[index].querySelector('.step-icon').classList.add('completed');
+        const icon = steps[index].querySelector('.step-icon');
+        icon.textContent = '✓';
+        icon.classList.add('done');
     }
 }
 
-// Select chat
 function selectChat(id) {
     currentChatId = id;
-    document.querySelectorAll('.chat-item').forEach(item => {
-        item.classList.remove('active');
-    });
+    document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
     document.querySelectorAll('.chat-item')[id - 1].classList.add('active');
     
     const titles = ['المحادثة الأولى', 'المحادثة الثانية'];
     document.getElementById('chatTitle').textContent = titles[id - 1];
     
-    document.getElementById('messagesContainer').innerHTML = '';
-    document.getElementById('stepsContainer').innerHTML = '';
+    document.getElementById('messagesArea').innerHTML = '';
+    document.getElementById('stepsList').innerHTML = '';
 }
 
-// New chat
-function newChat() {
-    document.getElementById('messagesContainer').innerHTML = '';
-    document.getElementById('stepsContainer').innerHTML = '';
+function newTask() {
+    document.getElementById('messagesArea').innerHTML = '';
+    document.getElementById('stepsList').innerHTML = '';
     document.getElementById('chatTitle').textContent = 'مهمة جديدة';
     document.getElementById('messageInput').focus();
-    document.querySelectorAll('.chat-item').forEach(item => {
-        item.classList.remove('active');
-    });
+    document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
 }
 
-// Logout
 function logout() {
     authToken = null;
     localStorage.removeItem('authToken');
@@ -204,7 +175,6 @@ function logout() {
     setupLogin();
 }
 
-// Escape HTML
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;

@@ -1,29 +1,22 @@
 // Global state
 let authToken = null;
-let currentConversationId = 1;
+let currentChatId = 1;
 
-// Initialize app
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     const savedToken = localStorage.getItem('authToken');
     if (savedToken) {
         authToken = savedToken;
         showApp();
     } else {
-        setupLoginForm();
+        setupLogin();
     }
 });
 
-// Setup login form
-function setupLoginForm() {
-    const loginForm = document.getElementById('loginForm');
-    const passwordInput = document.getElementById('password');
-    
-    loginForm.addEventListener('submit', handleLogin);
-    passwordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            handleLogin(e);
-        }
-    });
+// Setup login
+function setupLogin() {
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit', handleLogin);
 }
 
 // Handle login
@@ -31,18 +24,16 @@ async function handleLogin(e) {
     e.preventDefault();
     const password = document.getElementById('password').value;
     const errorDiv = document.getElementById('loginError');
-    const loginBtn = document.querySelector('.login-btn');
+    const button = document.querySelector('.login-form button');
     
     errorDiv.textContent = '';
-    loginBtn.disabled = true;
-    loginBtn.textContent = 'جاري التحقق...';
+    button.disabled = true;
+    button.textContent = 'جاري التحقق...';
 
     try {
         const response = await fetch('/api/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password })
         });
 
@@ -55,54 +46,44 @@ async function handleLogin(e) {
             showApp();
         } else {
             errorDiv.textContent = 'كلمة المرور غير صحيحة';
-            loginBtn.disabled = false;
-            loginBtn.textContent = 'دخول';
+            button.disabled = false;
+            button.textContent = 'دخول';
         }
     } catch (error) {
-        console.error('Login error:', error);
-        errorDiv.textContent = 'حدث خطأ أثناء محاولة تسجيل الدخول';
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'دخول';
+        errorDiv.textContent = 'خطأ في الاتصال';
+        button.disabled = false;
+        button.textContent = 'دخول';
     }
 }
 
-// Show app interface
+// Show app
 function showApp() {
     document.getElementById('loginContainer').style.display = 'none';
     document.getElementById('appContainer').style.display = 'flex';
-    document.getElementById('inputArea').style.display = 'block';
-    setupCommandForm();
+    setupChat();
 }
 
-// Setup command form
-function setupCommandForm() {
-    const commandForm = document.getElementById('commandForm');
-    const commandInput = document.getElementById('commandInput');
-    
-    commandForm.addEventListener('submit', handleCommandSubmit);
-    commandInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleCommandSubmit(e);
-        }
-    });
+// Setup chat
+function setupChat() {
+    const form = document.getElementById('chatForm');
+    form.addEventListener('submit', handleSendMessage);
 }
 
-// Handle command submission
-async function handleCommandSubmit(e) {
+// Handle send message
+async function handleSendMessage(e) {
     e.preventDefault();
-    const commandInput = document.getElementById('commandInput');
-    const command = commandInput.value.trim();
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
 
-    if (!command) return;
+    if (!message) return;
 
-    // Add user message to chat
-    addMessageToChat(command, 'user');
-    commandInput.value = '';
-    commandInput.focus();
+    // Add user message
+    addMessage(message, 'user');
+    input.value = '';
+    input.focus();
 
-    // Add execution steps
-    addExecutionStep('تحليل الأمر', 'جاري تحليل الأمر...');
+    // Add step
+    addStep('تحليل الأمر', 'جاري التحليل...');
 
     try {
         const response = await fetch('/api/execute', {
@@ -111,120 +92,103 @@ async function handleCommandSubmit(e) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             },
-            body: JSON.stringify({ command })
+            body: JSON.stringify({ command: message })
         });
 
         if (response.ok) {
             const data = await response.json();
             
-            // Update execution step
-            completeExecutionStep(0);
-            addExecutionStep('معالجة الطلب', 'تم معالجة الطلب بنجاح');
-            completeExecutionStep(1);
+            // Update steps
+            completeStep(0);
+            addStep('معالجة الطلب', 'تمت المعالجة بنجاح');
+            completeStep(1);
             
-            // Add agent response to chat
-            addMessageToChat(data.output, 'agent');
-            
+            // Add bot response
+            addMessage(data.output, 'bot');
         } else if (response.status === 401) {
             logout();
-        } else {
-            addMessageToChat('حدث خطأ أثناء تنفيذ الأمر', 'agent');
         }
     } catch (error) {
-        console.error('Command execution error:', error);
-        addMessageToChat('حدث خطأ في الاتصال بالخادم', 'agent');
+        addMessage('حدث خطأ في الاتصال', 'bot');
     }
 }
 
-// Add message to chat
-function addMessageToChat(message, sender) {
-    const chatMessages = document.getElementById('chatMessages');
-    const messageGroup = document.createElement('div');
-    messageGroup.className = 'message-group';
+// Add message
+function addMessage(text, sender) {
+    const container = document.getElementById('messagesContainer');
+    const group = document.createElement('div');
+    group.className = 'message-group';
     
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${sender}-message`;
+    const msg = document.createElement('div');
+    msg.className = `message ${sender}-message`;
     
-    if (sender === 'agent') {
-        messageDiv.innerHTML = `
+    if (sender === 'bot') {
+        msg.innerHTML = `
             <div class="message-avatar">🤖</div>
-            <div class="message-content">
-                <p>${escapeHtml(message)}</p>
+            <div class="message-bubble">
+                <p>${escapeHtml(text)}</p>
             </div>
         `;
     } else {
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                <p>${escapeHtml(message)}</p>
+        msg.innerHTML = `
+            <div class="message-bubble">
+                <p>${escapeHtml(text)}</p>
             </div>
         `;
     }
     
-    messageGroup.appendChild(messageDiv);
-    chatMessages.appendChild(messageGroup);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    group.appendChild(msg);
+    container.appendChild(group);
+    container.scrollTop = container.scrollHeight;
 }
 
-// Add execution step
-function addExecutionStep(title, description) {
-    const stepsList = document.getElementById('executionSteps');
-    const stepItem = document.createElement('div');
-    stepItem.className = 'step-item';
-    
-    stepItem.innerHTML = `
-        <div class="step-number">⏳</div>
-        <div class="step-content">
-            <div class="step-title">${escapeHtml(title)}</div>
-            <div class="step-description">${escapeHtml(description)}</div>
+// Add step
+function addStep(name, desc) {
+    const container = document.getElementById('stepsContainer');
+    const step = document.createElement('div');
+    step.className = 'step-item';
+    step.innerHTML = `
+        <div class="step-icon">⏳</div>
+        <div class="step-info">
+            <div class="step-name">${escapeHtml(name)}</div>
+            <div class="step-desc">${escapeHtml(desc)}</div>
         </div>
     `;
-    
-    stepsList.appendChild(stepItem);
-    document.getElementById('executionSteps').scrollTop = document.getElementById('executionSteps').scrollHeight;
+    container.appendChild(step);
+    container.scrollTop = container.scrollHeight;
 }
 
-// Complete execution step
-function completeExecutionStep(index) {
+// Complete step
+function completeStep(index) {
     const steps = document.querySelectorAll('.step-item');
     if (steps[index]) {
-        steps[index].classList.add('completed');
-        steps[index].querySelector('.step-number').textContent = '✓';
+        steps[index].querySelector('.step-icon').textContent = '✓';
+        steps[index].querySelector('.step-icon').classList.add('completed');
     }
 }
 
-// Select conversation
-function selectConversation(id) {
-    currentConversationId = id;
-    
-    // Update active state
-    document.querySelectorAll('.conversation-item').forEach(item => {
+// Select chat
+function selectChat(id) {
+    currentChatId = id;
+    document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
     });
+    document.querySelectorAll('.chat-item')[id - 1].classList.add('active');
     
-    const items = document.querySelectorAll('.conversation-item');
-    if (items[id - 1]) {
-        items[id - 1].classList.add('active');
-    }
-    
-    // Update chat title
     const titles = ['المحادثة الأولى', 'المحادثة الثانية'];
-    document.getElementById('chatTitle').textContent = titles[id - 1] || 'محادثة جديدة';
+    document.getElementById('chatTitle').textContent = titles[id - 1];
     
-    // Clear messages and steps
-    document.getElementById('chatMessages').innerHTML = '';
-    document.getElementById('executionSteps').innerHTML = '';
+    document.getElementById('messagesContainer').innerHTML = '';
+    document.getElementById('stepsContainer').innerHTML = '';
 }
 
-// New task
-function newTask() {
-    // Clear current chat
-    document.getElementById('chatMessages').innerHTML = '';
-    document.getElementById('executionSteps').innerHTML = '';
+// New chat
+function newChat() {
+    document.getElementById('messagesContainer').innerHTML = '';
+    document.getElementById('stepsContainer').innerHTML = '';
     document.getElementById('chatTitle').textContent = 'مهمة جديدة';
-    document.getElementById('commandInput').focus();
-    
-    // Remove active state from conversations
-    document.querySelectorAll('.conversation-item').forEach(item => {
+    document.getElementById('messageInput').focus();
+    document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
     });
 }
@@ -233,18 +197,14 @@ function newTask() {
 function logout() {
     authToken = null;
     localStorage.removeItem('authToken');
-    
-    // Reset UI
     document.getElementById('appContainer').style.display = 'none';
-    document.getElementById('inputArea').style.display = 'none';
     document.getElementById('loginContainer').style.display = 'flex';
     document.getElementById('password').value = '';
     document.getElementById('loginError').textContent = '';
-    
-    setupLoginForm();
+    setupLogin();
 }
 
-// Utility function to escape HTML
+// Escape HTML
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
